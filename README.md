@@ -13,7 +13,9 @@ Lightweight SOCKS5 proxy server with optional username/password authentication, 
 - Prerequisites: Go 1.20+
 - Build: `go build -o micro-socks`
 
-## Debian Package
+## Packages
+
+### Debian Package
 - Build .deb: `bash scripts/build-deb.sh` (uses git tag or `0.1.0`)
 - Override version: `VERSION=1.2.3 bash scripts/build-deb.sh`
 - Override arch: `ARCH=arm64 bash scripts/build-deb.sh`
@@ -22,7 +24,16 @@ Lightweight SOCKS5 proxy server with optional username/password authentication, 
 Install example:
 - `sudo dpkg -i dist/micro-socks_0.1.0_amd64.deb`
 
-Note: the package installs the binary to `/usr/bin/micro-socks`. Create and secure your `users5.txt` manually if needed (`chmod 600`).
+### RPM Package
+- Build .rpm: `bash scripts/build-rpm.sh` (uses git tag or `0.1.0`)
+- Override version: `VERSION=1.2.3 bash scripts/build-rpm.sh`
+- Override arch: `ARCH=aarch64 bash scripts/build-rpm.sh`
+- Output: `dist/<arch>/micro-socks-<version>-1.*.<arch>.rpm`
+
+Install example:
+- `sudo rpm -i dist/x86_64/micro-socks-0.1.0-1.*.x86_64.rpm`
+
+Note: packages install the binary to `/usr/bin/micro-socks`. Create and secure your `users5.txt` manually if needed (`chmod 600`).
 
 ### Systemd Service
 - Unit path: `/lib/systemd/system/micro-socks.service`

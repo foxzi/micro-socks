@@ -54,9 +54,23 @@ func main() {
     
     // Parse command line flags
     listenAddr := flag.String("listen", "0.0.0.0:1080", "Listen address and port")
+    listenAddrShort := flag.String("l", "0.0.0.0:1080", "Listen address and port (short)")
     outIface := flag.String("iface", "", "Outbound network interface")
+    outIfaceShort := flag.String("i", "", "Outbound network interface (short)")
     userFile := flag.String("users", "", "User file (format: username:password)")
+    userFileShort := flag.String("u", "", "User file (short)")
     flag.Parse()
+
+    // Merge short and long flags (short takes precedence if both set)
+    if *listenAddrShort != "0.0.0.0:1080" {
+        listenAddr = listenAddrShort
+    }
+    if *outIfaceShort != "" {
+        outIface = outIfaceShort
+    }
+    if *userFileShort != "" {
+        userFile = userFileShort
+    }
     
     // Env overrides if flags left at defaults
     if v := os.Getenv("PROXY_LISTEN"); v != "" && *listenAddr == "0.0.0.0:1080" {
@@ -134,7 +148,13 @@ func main() {
 func loadUsers(filename string, config *Config) error {
     f, err := os.Open(filename)
     if err != nil {
-        return err
+        if os.IsNotExist(err) {
+            return fmt.Errorf("user file not found: %s\nPlease create the file with format: username:password (one per line)", filename)
+        }
+        if os.IsPermission(err) {
+            return fmt.Errorf("permission denied reading user file: %s\nCheck file permissions", filename)
+        }
+        return fmt.Errorf("failed to open user file %s: %w", filename, err)
     }
     defer f.Close()
 
