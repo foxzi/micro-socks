@@ -109,7 +109,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [x86_64, aarch64]
+        include:
+          - goarch: amd64
+            rpmarch: x86_64
+          - goarch: arm64
+            rpmarch: aarch64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -122,6 +126,20 @@ jobs:
       - name: Install RPM build tools
         run: sudo apt-get update && sudo apt-get install -y rpm
 
+      - name: Build binary for target architecture
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
+            VERSION="0.1.0"
+          fi
+
+          mkdir -p dist/bin
+          go build -ldflags "-s -w" -o "dist/bin/micro-socks-${{ matrix.rpmarch }}" ./
+
       - name: Build RPM package
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
@@ -130,14 +148,15 @@ jobs:
           fi
 
           export VERSION=$VERSION
-          export ARCH=${{ matrix.arch }}
+          export ARCH=${{ matrix.rpmarch }}
+          export PREBUILT_BINARY="dist/bin/micro-socks-${{ matrix.rpmarch }}"
           bash scripts/build-rpm.sh
 
       - name: Upload RPM package
         uses: actions/upload-artifact@v4
         with:
-          name: rpm-${{ matrix.arch }}
-          path: dist/${{ matrix.arch }}/*.rpm
+          name: rpm-${{ matrix.rpmarch }}
+          path: dist/${{ matrix.rpmarch }}/*.rpm
 
   release:
     name: Create GitHub Release

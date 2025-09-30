@@ -59,7 +59,14 @@ mkdir -p "$GOCACHE"
 
 echo "[+] Compiling Go binary..."
 BINARY_PATH="$BUILD_ROOT/BUILD/$BIN_NAME"
-go build -ldflags "-s -w" -o "$BINARY_PATH" ./
+
+# Use prebuilt binary if provided, otherwise build
+if [ -n "${PREBUILT_BINARY:-}" ] && [ -f "$PREBUILT_BINARY" ]; then
+    echo "[+] Using prebuilt binary: $PREBUILT_BINARY"
+    cp "$PREBUILT_BINARY" "$BINARY_PATH"
+else
+    go build -ldflags "-s -w" -o "$BINARY_PATH" ./
+fi
 
 # Create spec file
 echo "[+] Writing spec file..."
