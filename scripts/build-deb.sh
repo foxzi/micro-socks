@@ -134,17 +134,27 @@ cat > "$STAGE_DIR/DEBIAN/postinst" <<'EOF'
 set -e
 
 # Create system user/group if needed
-if ! getent group socks5 >/dev/null; then
-    addgroup --system socks5 || true
+if ! getent group socks5 >/dev/null 2>&1; then
+    if command -v addgroup >/dev/null 2>&1; then
+        addgroup --system socks5 || true
+    elif command -v groupadd >/dev/null 2>&1; then
+        groupadd -r socks5 || true
+    fi
 fi
-if ! getent passwd socks5 >/dev/null; then
-    adduser --system --no-create-home --ingroup socks5 --disabled-login --shell /usr/sbin/nologin socks5 || true
+if ! getent passwd socks5 >/dev/null 2>&1; then
+    if command -v adduser >/dev/null 2>&1; then
+        adduser --system --no-create-home --ingroup socks5 --disabled-login --shell /usr/sbin/nologin socks5 || true
+    elif command -v useradd >/dev/null 2>&1; then
+        useradd -r -g socks5 -d /nonexistent -s /usr/sbin/nologin socks5 || true
+    fi
 fi
 
 # Ensure config dir
 mkdir -p /etc/micro-socks
 chmod 0750 /etc/micro-socks
-chown root:socks5 /etc/micro-socks
+if getent group socks5 >/dev/null 2>&1; then
+    chown root:socks5 /etc/micro-socks || true
+fi
 
 # Reload systemd to pick up new unit
 if command -v systemctl >/dev/null 2>&1; then
@@ -180,6 +190,8 @@ if [ "$1" = "purge" ]; then
     # Best-effort remove system user
     if command -v deluser >/dev/null 2>&1; then
         deluser --system socks5 || true
+    elif command -v userdel >/dev/null 2>&1; then
+        userdel socks5 || true
     fi
     # Leave /etc/micro-socks/ for admin unless empty
     if [ -d /etc/micro-socks ] && [ -z "$(ls -A /etc/micro-socks 2>/dev/null)" ]; then
