@@ -204,9 +204,10 @@ rpmbuild --define "_topdir $BUILD_ROOT" \
          --target "$ARCH" \
          -bb "$SPEC_FILE"
 
-RPM_PATH="$DIST_DIR/$ARCH/${PKG_NAME}-${VERSION}-1.*.${ARCH}.rpm"
-if ls $RPM_PATH 1> /dev/null 2>&1; then
-    echo "[✓] Done: $RPM_PATH"
+# Check if RPM was created
+RPM_FILES=("$DIST_DIR/$ARCH/${PKG_NAME}-${VERSION}"-*.rpm)
+if [ -f "${RPM_FILES[0]}" ]; then
+    echo "[✓] Done: ${RPM_FILES[0]}"
 else
     echo "[!] RPM build may have failed. Check $BUILD_ROOT for details."
     exit 1
