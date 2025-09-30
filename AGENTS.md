@@ -3,13 +3,13 @@
 ## Project Structure & Module Organization
 - `main.go`: SOCKS5 proxy server implementation (single binary).
 - `users5.txt`: Optional credentials file (`username:password` per line).
-- Suggested growth: place CLI under `cmd/socks5-proxy/` and shared code in `pkg/` when refactoring beyond a single file.
+- Suggested growth: place CLI under `cmd/micro-socks/` and shared code in `pkg/` when refactoring beyond a single file.
 
 ## Build, Test, and Development Commands
-- Build: `go build -o socks5-proxy` — produces the proxy binary.
-- Run (no auth): `./socks5-proxy --listen 0.0.0.0:1080` — starts a public SOCKS5 endpoint.
-- Run (with auth): `./socks5-proxy --users users5.txt` — enables username/password auth.
-- Bind outbound interface: `./socks5-proxy --iface eth0` — attempts egress via `eth0`.
+- Build: `go build -o micro-socks` — produces the proxy binary.
+- Run (no auth): `./micro-socks --listen 0.0.0.0:1080` — starts a public SOCKS5 endpoint.
+- Run (with auth): `./micro-socks --users users5.txt` — enables username/password auth.
+- Bind outbound interface: `./micro-socks --iface eth0` — attempts egress via `eth0`.
 - Format: `go fmt ./...` — applies standard Go formatting.
 - Vet: `go vet ./...` — catches common issues.
 

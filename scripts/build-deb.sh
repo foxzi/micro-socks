@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Minimal Debian package builder for socks5-proxy
+# Minimal Debian package builder for micro-socks
 # Usage examples:
 #   ./scripts/build-deb.sh               # auto version from git or 0.1.0
 #   VERSION=1.2.3 ./scripts/build-deb.sh # explicit version
@@ -10,8 +10,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
-PKG_NAME="socks5-proxy"
-BIN_NAME="socks5-proxy"
+PKG_NAME="micro-socks"
+BIN_NAME="micro-socks"
 
 # Detect version
 VERSION="${VERSION:-}"
@@ -54,7 +54,7 @@ mkdir -p \
   "$STAGE_DIR/usr/bin" \
   "$STAGE_DIR/lib/systemd/system" \
   "$STAGE_DIR/etc/default" \
-  "$STAGE_DIR/etc/socks5-proxy"
+  "$STAGE_DIR/etc/micro-socks"
 
 # Build static-ish binary for Linux target
 export CGO_ENABLED=0
@@ -88,7 +88,7 @@ chmod 0644 "$STAGE_DIR/DEBIAN/control"
 echo "[+] Adding systemd unit and defaults..."
 cat > "$STAGE_DIR/lib/systemd/system/$PKG_NAME.service" <<'EOF'
 [Unit]
-Description=SOCKS5 Proxy (socks5-proxy)
+Description=SOCKS5 Proxy (micro-socks)
 Wants=network-online.target
 After=network-online.target
 
@@ -96,8 +96,8 @@ After=network-online.target
 Type=simple
 User=socks5
 Group=socks5
-EnvironmentFile=-/etc/default/socks5-proxy
-ExecStart=/usr/bin/socks5-proxy $OPTS
+EnvironmentFile=-/etc/default/micro-socks
+ExecStart=/usr/bin/micro-socks $OPTS
 Restart=on-failure
 RestartSec=2s
 AmbientCapabilities=
@@ -109,24 +109,24 @@ WantedBy=multi-user.target
 EOF
 
 # Defaults
-cat > "$STAGE_DIR/etc/default/socks5-proxy" <<'EOF'
-# Configuration for socks5-proxy systemd service
+cat > "$STAGE_DIR/etc/default/micro-socks" <<'EOF'
+# Configuration for micro-socks systemd service
 
 # Either set explicit flags in OPTS (uncomment and edit), e.g.:
-# OPTS="--listen 0.0.0.0:1080 --users /etc/socks5-proxy/users5.txt --iface eth0"
+OPTS="--listen 0.0.0.0:1080 --users /etc/micro-socks/users5.txt"
 
 # Or set environment variables used by the binary when flags are default:
 # PROXY_LISTEN="127.0.0.1:1080"
-# PROXY_USERS="/etc/socks5-proxy/users5.txt"
+# PROXY_USERS="/etc/micro-socks/users5.txt"
 # PROXY_IFACE=""
 
 # Notes:
-# - Create /etc/socks5-proxy/users5.txt with lines: username:password
-# - Restrict permissions: chmod 640 /etc/socks5-proxy/users5.txt && chgrp socks5 /etc/socks5-proxy/users5.txt
+# - Create /etc/micro-socks/users5.txt with lines: username:password
+# - Restrict permissions: chmod 640 /etc/micro-socks/users5.txt && chgrp socks5 /etc/micro-socks/users5.txt
 EOF
 
 chmod 0644 "$STAGE_DIR/lib/systemd/system/$PKG_NAME.service"
-chmod 0644 "$STAGE_DIR/etc/default/socks5-proxy"
+chmod 0644 "$STAGE_DIR/etc/default/micro-socks"
 
 # Maintainer scripts
 cat > "$STAGE_DIR/DEBIAN/postinst" <<'EOF'
@@ -142,17 +142,17 @@ if ! getent passwd socks5 >/dev/null; then
 fi
 
 # Ensure config dir
-mkdir -p /etc/socks5-proxy
-chmod 0750 /etc/socks5-proxy
-chown root:socks5 /etc/socks5-proxy
+mkdir -p /etc/micro-socks
+chmod 0750 /etc/micro-socks
+chown root:socks5 /etc/micro-socks
 
 # Reload systemd to pick up new unit
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload || true
 fi
 
-echo "socks5-proxy installed. Configure /etc/default/socks5-proxy and enable with:"
-echo "  sudo systemctl enable --now socks5-proxy"
+echo "micro-socks installed. Configure /etc/default/micro-socks and enable with:"
+echo "  sudo systemctl enable --now micro-socks"
 exit 0
 EOF
 
@@ -162,7 +162,7 @@ set -e
 
 if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
     if command -v systemctl >/dev/null 2>&1; then
-        systemctl stop socks5-proxy.service || true
+        systemctl stop micro-socks.service || true
     fi
 fi
 exit 0
@@ -181,9 +181,9 @@ if [ "$1" = "purge" ]; then
     if command -v deluser >/dev/null 2>&1; then
         deluser --system socks5 || true
     fi
-    # Leave /etc/socks5-proxy/ for admin unless empty
-    if [ -d /etc/socks5-proxy ] && [ -z "$(ls -A /etc/socks5-proxy 2>/dev/null)" ]; then
-        rmdir /etc/socks5-proxy || true
+    # Leave /etc/micro-socks/ for admin unless empty
+    if [ -d /etc/micro-socks ] && [ -z "$(ls -A /etc/micro-socks 2>/dev/null)" ]; then
+        rmdir /etc/micro-socks || true
     fi
 fi
 exit 0
@@ -193,7 +193,7 @@ chmod 0755 "$STAGE_DIR/DEBIAN/postinst" "$STAGE_DIR/DEBIAN/prerm" "$STAGE_DIR/DE
 
 # conffiles
 cat > "$STAGE_DIR/DEBIAN/conffiles" <<'EOF'
-/etc/default/socks5-proxy
+/etc/default/micro-socks
 EOF
 chmod 0644 "$STAGE_DIR/DEBIAN/conffiles"
 

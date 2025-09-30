@@ -1,6 +1,6 @@
 # Binaries
-socks5-proxy
-socks5-proxy.exe
+micro-socks
+micro-socks.exe
 
 # Build artifacts
 *.out
