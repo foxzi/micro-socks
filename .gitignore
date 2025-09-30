@@ -1,0 +1,13 @@
+# Binaries
+socks5-proxy
+socks5-proxy.exe
+
+# Build artifacts
+*.out
+*.log
+dist/
+build/
+
+# IDE/editor
+.vscode/
+.idea/
