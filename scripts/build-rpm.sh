@@ -80,7 +80,6 @@ License:        MIT
 URL:            https://github.com/example/micro-socks
 Source0:        %{name}-%{version}.tar.gz
 
-BuildArch:      $ARCH
 Requires:       systemd
 
 %description
@@ -202,6 +201,7 @@ echo "[+] Building RPM package..."
 rpmbuild --define "_topdir $BUILD_ROOT" \
          --define "_rpmdir $DIST_DIR" \
          --buildroot "$BUILD_ROOT/BUILDROOT" \
+         --target "$ARCH" \
          -bb "$SPEC_FILE"
 
 RPM_PATH="$DIST_DIR/$ARCH/${PKG_NAME}-${VERSION}-1.*.${ARCH}.rpm"
